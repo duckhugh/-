@@ -7,7 +7,8 @@ interface MainScreenProps {
   onStart: (type: 'food' | 'drink') => void;
   weather: Weather | null;
   locationError: string | null;
-  isLoadingLocation: boolean;
+  isLocating: boolean;
+  isFetching: boolean;
   onRetryLocation: () => void;
 }
 
@@ -15,11 +16,24 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   onStart,
   weather,
   locationError,
-  isLoadingLocation,
+  isLocating,
+  isFetching,
   onRetryLocation,
 }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [selectedType, setSelectedType] = useState<'food' | 'drink' | null>(null);
+
+  useEffect(() => {
+    if (!isFetching) {
+      setSelectedType(null);
+    }
+  }, [isFetching]);
+
+  const handleStartClick = (type: 'food' | 'drink') => {
+    setSelectedType(type);
+    onStart(type);
+  };
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -81,43 +95,79 @@ export const MainScreen: React.FC<MainScreenProps> = ({
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="flex flex-col items-center gap-4 z-20"
+        className="flex flex-col items-center gap-4 z-20 w-full"
       >
-        <button
-          onClick={() => onStart('food')}
-          disabled={isLoadingLocation || !!locationError}
-          className="group relative px-[40px] py-[18px] w-full max-w-[280px] justify-center bg-white text-black rounded-full text-[20px] font-semibold hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-[10px] shadow-[0_25px_50px_rgba(0,0,0,0.3)]"
-        >
-          {isLoadingLocation ? (
-            <>
-              <Loader2 className="w-6 h-6 animate-spin" />
-              定位中...
-            </>
-          ) : (
-            <>
-              <Utensils className="w-6 h-6 group-hover:animate-bounce" />
-              想吃什麼？
-            </>
+        <AnimatePresence mode="popLayout">
+          {(!isFetching || selectedType === 'food') && (
+            <motion.div
+              layout
+              key="food-btn"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+              className="w-full max-w-[280px]"
+            >
+              <button
+                onClick={() => handleStartClick('food')}
+                disabled={isLocating || isFetching || !!locationError}
+                className="group relative px-[40px] py-[18px] w-full justify-center bg-white text-black rounded-full text-[20px] font-semibold hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-[10px] shadow-[0_25px_50px_rgba(0,0,0,0.3)]"
+              >
+                {isLocating ? (
+                  <>
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    定位中...
+                  </>
+                ) : isFetching && selectedType === 'food' ? (
+                  <>
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    搜尋中...
+                  </>
+                ) : (
+                  <>
+                    <Utensils className="w-6 h-6 group-hover:animate-bounce" />
+                    想吃什麼？
+                  </>
+                )}
+              </button>
+            </motion.div>
           )}
-        </button>
 
-        <button
-          onClick={() => onStart('drink')}
-          disabled={isLoadingLocation || !!locationError}
-          className="group relative px-[40px] py-[18px] w-full max-w-[280px] justify-center bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-full text-[20px] font-semibold hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-[10px] shadow-[0_25px_50px_rgba(0,0,0,0.3)]"
-        >
-          {isLoadingLocation ? (
-            <>
-              <Loader2 className="w-6 h-6 animate-spin" />
-              定位中...
-            </>
-          ) : (
-            <>
-              <Coffee className="w-6 h-6 group-hover:animate-bounce" />
-              想喝什麼？
-            </>
+          {(!isFetching || selectedType === 'drink') && (
+            <motion.div
+              layout
+              key="drink-btn"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+              className="w-full max-w-[280px]"
+            >
+              <button
+                onClick={() => handleStartClick('drink')}
+                disabled={isLocating || isFetching || !!locationError}
+                className="group relative px-[40px] py-[18px] w-full justify-center bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-full text-[20px] font-semibold hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-[10px] shadow-[0_25px_50px_rgba(0,0,0,0.3)]"
+              >
+                {isLocating ? (
+                  <>
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    定位中...
+                  </>
+                ) : isFetching && selectedType === 'drink' ? (
+                  <>
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    搜尋中...
+                  </>
+                ) : (
+                  <>
+                    <Coffee className="w-6 h-6 group-hover:animate-bounce" />
+                    想喝什麼？
+                  </>
+                )}
+              </button>
+            </motion.div>
           )}
-        </button>
+        </AnimatePresence>
 
         {locationError && (
           <div className="w-full max-w-[280px] bg-white/10 backdrop-blur-md border border-red-400/50 rounded-2xl p-5 flex flex-col items-center gap-3 shadow-lg">

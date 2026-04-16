@@ -115,7 +115,8 @@ export default function App() {
           onStart={handleStart} 
           weather={weather} 
           locationError={locationError}
-          isLoadingLocation={isLoadingLocation || isFetchingRestaurants}
+          isLocating={isLoadingLocation}
+          isFetching={isFetchingRestaurants}
           onRetryLocation={fetchLocation}
         />
       ) : (
