@@ -69,8 +69,21 @@ export const MapScreen: React.FC<MapScreenProps> = ({ userLocation, restaurants,
     return saved ? JSON.parse(saved) : {};
   });
   const [showListModal, setShowListModal] = useState<'liked' | 'disliked' | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const currentRestaurant = restaurants[currentIndex];
+
+  useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [currentIndex]);
+
+  useEffect(() => {
+    if (!currentRestaurant?.imageUrls?.length) return;
+    const timer = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % currentRestaurant.imageUrls.length);
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [currentRestaurant]);
 
   const handlePreference = (type: 'liked' | 'disliked', dir: number) => {
     const newSaved = { ...savedRestaurants, [currentRestaurant.id]: { ...currentRestaurant, pref: type } };
@@ -173,12 +186,19 @@ export const MapScreen: React.FC<MapScreenProps> = ({ userLocation, restaurants,
               className="relative w-full bg-white/15 backdrop-blur-[25px] border border-white/25 rounded-[30px] md:rounded-[40px] p-6 md:p-10 flex flex-col md:flex-row gap-6 md:gap-10 shadow-[0_25px_50px_rgba(0,0,0,0.3)] cursor-grab active:cursor-grabbing text-white"
             >
               <div className="relative w-full md:w-[320px] h-[180px] md:h-[400px] shrink-0 rounded-[20px] md:rounded-[24px] overflow-hidden bg-gradient-to-tr from-[#333] to-[#555]">
-                <img 
-                  src={currentRestaurant.imageUrl} 
-                  alt={currentRestaurant.name}
-                  className="w-full h-full object-cover opacity-90"
-                  referrerPolicy="no-referrer"
-                />
+                <AnimatePresence mode="popLayout">
+                  <motion.img 
+                    key={currentImageIndex}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 0.9 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.8 }}
+                    src={currentRestaurant.imageUrls?.[currentImageIndex] || currentRestaurant.imageUrl} 
+                    alt={currentRestaurant.name}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </AnimatePresence>
                 {savedRestaurants[currentRestaurant.id]?.pref === 'liked' && (
                   <button onClick={() => setShowListModal('liked')} className="absolute top-4 left-4 bg-green-500/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-white text-sm font-medium flex items-center gap-1.5 shadow-lg hover:bg-green-600 transition-colors">
                     <Heart className="w-4 h-4 fill-current" /> 已喜歡

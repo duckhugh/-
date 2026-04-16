@@ -68,15 +68,25 @@ Return a JSON array of objects with the following schema:
 
     const rawRestaurants = JSON.parse(text);
     
-    return rawRestaurants.map((r: any, index: number) => ({
-      id: `rest-${Date.now()}-${index}`,
-      name: r.name,
-      description: r.description,
-      lat: r.lat,
-      lng: r.lng,
-      cuisine: r.cuisine,
-      imageUrl: `https://picsum.photos/seed/${encodeURIComponent(r.imageKeyword + Date.now())}/800/600`,
-    }));
+    return rawRestaurants.map((r: any, index: number) => {
+      const baseKeyword = encodeURIComponent(r.imageKeyword + Date.now());
+      return {
+        id: `rest-${Date.now()}-${index}`,
+        name: r.name,
+        description: r.description,
+        lat: r.lat,
+        lng: r.lng,
+        cuisine: r.cuisine,
+        imageUrl: `https://picsum.photos/seed/${baseKeyword}-0/800/600`,
+        imageUrls: [
+          `https://picsum.photos/seed/${baseKeyword}-0/800/600`,
+          `https://picsum.photos/seed/${baseKeyword}-1/800/600`,
+          `https://picsum.photos/seed/${baseKeyword}-2/800/600`,
+          `https://picsum.photos/seed/${baseKeyword}-3/800/600`,
+          `https://picsum.photos/seed/${baseKeyword}-4/800/600`,
+        ]
+      };
+    });
   } catch (error) {
     console.error('Error fetching restaurants:', error);
     // Fallback data if API fails
@@ -89,6 +99,11 @@ Return a JSON array of objects with the following schema:
         lng: location.lng + 0.001,
         cuisine: 'Cafe',
         imageUrl: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=80',
+        imageUrls: [
+          'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=80',
+          'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=800&q=80',
+          'https://images.unsplash.com/photo-1445116572660-236099ce43f0?w=800&q=80'
+        ]
       },
       {
         id: 'fallback-2',
@@ -98,6 +113,11 @@ Return a JSON array of objects with the following schema:
         lng: location.lng + 0.001,
         cuisine: 'Bistro',
         imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
+        imageUrls: [
+          'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
+          'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80',
+          'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=800&q=80'
+        ]
       }
     ];
   }

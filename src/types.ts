@@ -6,6 +6,7 @@ export interface Restaurant {
   lng: number;
   cuisine: string;
   imageUrl: string;
+  imageUrls: string[];
 }
 
 export interface Location {
