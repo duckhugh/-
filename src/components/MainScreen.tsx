@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { MapPin, Cloud, Sun, CloudRain, Loader2, Coffee, Utensils } from 'lucide-react';
+import { MapPin, Cloud, Sun, CloudRain, Loader2, Coffee, Utensils, AlertTriangle, RefreshCw, Settings, X } from 'lucide-react';
 import { Weather } from '../types';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface MainScreenProps {
   onStart: (type: 'food' | 'drink') => void;
   weather: Weather | null;
   locationError: string | null;
   isLoadingLocation: boolean;
+  onRetryLocation: () => void;
 }
 
 export const MainScreen: React.FC<MainScreenProps> = ({
@@ -15,8 +16,10 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   weather,
   locationError,
   isLoadingLocation,
+  onRetryLocation,
 }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -117,11 +120,78 @@ export const MainScreen: React.FC<MainScreenProps> = ({
         </button>
 
         {locationError && (
-          <div className="text-white bg-red-500/50 backdrop-blur-[25px] border border-white/25 px-4 py-2 rounded-lg text-sm">
-            {locationError}
+          <div className="w-full max-w-[280px] bg-white/10 backdrop-blur-md border border-red-400/50 rounded-2xl p-5 flex flex-col items-center gap-3 shadow-lg">
+            <div className="flex items-center gap-2 text-red-300">
+              <AlertTriangle className="w-5 h-5" />
+              <span className="font-medium">定位失敗</span>
+            </div>
+            <p className="text-white/90 text-sm text-center leading-relaxed">
+              {locationError}
+            </p>
+            <div className="flex w-full gap-2 mt-2">
+              <button
+                onClick={onRetryLocation}
+                className="flex-1 bg-white/20 hover:bg-white/30 text-white py-2 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+              >
+                <RefreshCw className="w-4 h-4" /> 重試
+              </button>
+              <button
+                onClick={() => setShowHelpModal(true)}
+                className="flex-1 bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+              >
+                <Settings className="w-4 h-4" /> 教學
+              </button>
+            </div>
           </div>
         )}
       </motion.div>
+
+      <AnimatePresence>
+        {showHelpModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[2000] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="w-full max-w-sm bg-white/15 backdrop-blur-[25px] border border-white/25 rounded-[30px] p-6 shadow-2xl text-white relative"
+            >
+              <button onClick={() => setShowHelpModal(false)} className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors">
+                <X className="w-5 h-5"/>
+              </button>
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><Settings className="w-5 h-5"/> 如何開啟定位？</h3>
+              
+              <div className="space-y-4 text-sm text-white/80">
+                <p className="text-yellow-200 text-xs">⚠️ 網頁無法直接跳轉至手機設定，請依照以下步驟手動開啟：</p>
+                
+                <div>
+                  <h4 className="font-bold text-white mb-1">📱 iOS (iPhone/iPad)</h4>
+                  <ol className="list-decimal pl-4 space-y-1">
+                    <li>前往手機的「設定」&gt;「隱私權與安全性」</li>
+                    <li>點擊「定位服務」並確認已開啟</li>
+                    <li>在下方找到您使用的瀏覽器 (如 Safari 或 Chrome)</li>
+                    <li>將權限改為「使用 App 期間」</li>
+                  </ol>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-white mb-1">🤖 Android</h4>
+                  <ol className="list-decimal pl-4 space-y-1">
+                    <li>前往手機的「設定」&gt;「位置」</li>
+                    <li>確認「使用位置資訊」已開啟</li>
+                    <li>點擊「應用程式權限」</li>
+                    <li>找到您使用的瀏覽器 (如 Chrome) 並允許存取</li>
+                  </ol>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

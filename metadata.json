@@ -1,6 +1,8 @@
 {
-  "name": "想吃什麼 - 附近餐廳推薦",
+  "name": "想吃喝什麼?",
   "description": "根據使用者位置、時間與天氣，推薦附近營業中的餐廳。",
-  "requestFramePermissions": ["geolocation"],
+  "requestFramePermissions": [
+    "geolocation"
+  ],
   "majorCapabilities": []
 }

@@ -29,7 +29,9 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
+  const fetchLocation = () => {
+    setIsLoadingLocation(true);
+    setLocationError(null);
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
@@ -45,7 +47,15 @@ export default function App() {
         },
         (error) => {
           console.error('Geolocation error:', error);
-          setLocationError('無法取得位置資訊，請確認已開啟定位權限。');
+          if (error.code === error.PERMISSION_DENIED) {
+            setLocationError('您已拒絕定位權限。請在瀏覽器設定中允許存取位置資訊。');
+          } else if (error.code === error.POSITION_UNAVAILABLE) {
+            setLocationError('無法取得位置資訊。請確認手機的 GPS 定位功能已開啟。');
+          } else if (error.code === error.TIMEOUT) {
+            setLocationError('定位請求超時。請確認網路連線或移動到空曠處後重試。');
+          } else {
+            setLocationError('發生未知錯誤，無法取得位置資訊。');
+          }
           setIsLoadingLocation(false);
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -54,6 +64,10 @@ export default function App() {
       setLocationError('您的瀏覽器不支援定位功能。');
       setIsLoadingLocation(false);
     }
+  };
+
+  useEffect(() => {
+    fetchLocation();
   }, []);
 
   const handleStart = async (type: 'food' | 'drink') => {
@@ -102,6 +116,7 @@ export default function App() {
           weather={weather} 
           locationError={locationError}
           isLoadingLocation={isLoadingLocation || isFetchingRestaurants}
+          onRetryLocation={fetchLocation}
         />
       ) : (
         location && restaurants.length > 0 && (
